@@ -15,7 +15,7 @@ next f (steps, i, jumps) =
 
 getExitSteps :: Length -> Update -> State -> Int
 getExitSteps len f (steps, i, jumps) =
-    if i >= len then steps else getExitSteps len f $ next f (steps, i, jumps)
+    if i >= len then steps else getExitSteps len f $! next f (steps, i, jumps)
 
 main :: IO ()
 main = do
