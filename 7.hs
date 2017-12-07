@@ -1,11 +1,9 @@
 import Data.HashSet (Set, fromList, delete)
 import Data.List.Split
-import Debug.Trace
 
 type Weight = Int
 type Program = String
 type Programs = [Program]
---type Tree = Map Program (Weight, Programs)
 
 discardEmpty :: [String] -> [String]
 discardEmpty [""] = []
@@ -21,11 +19,11 @@ parseLine line =
 main :: IO ()
 main = do
     input <- readFile "7.txt"
-    let list  = map parseLine $ lines input
-        names = fromList $ map (\(name, _, _) -> name) list
-        bottom = foldr (\(name, _, programs) set -> 
+    let list    = map parseLine $ lines input
+        nameSet = fromList $ map (\(name, _, _) -> name) list
+        bottom  = foldr (\(name, _, programs) set -> 
             case programs of
                 [] -> delete name set
                 ps -> foldr delete set ps)
-            names list
+            nameSet list
     print $ bottom
