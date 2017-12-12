@@ -1,4 +1,4 @@
-import Data.HashMap (Map, alter, empty, toList, findWithDefault)
+import Data.HashMap (Map, alter, empty, findWithDefault, elems)
 
 data Instruction = I {
     reg :: String,
@@ -32,19 +32,13 @@ parseLine s =
         fnc = flip (getFnc function) $ read argument
     }
 
-executeInstruction :: (Map String Int, Int) -> Instruction -> (Map String Int, Int)
-executeInstruction (m, highest) (I r v s f) =
-    let value      = findWithDefault 0 s m
-        newHighest = max highest $ findWithDefault highest r m
-    in  if   f value
-        then (alter (addToMaybe v) r m, newHighest)
-        else (m, highest)
+executeInstruction :: Map String Int -> Instruction -> Map String Int
+executeInstruction m (I r v s f) =
+    alter (addToMaybe . (*v) . fromEnum . f $ findWithDefault 0 s m) r m
 
 main :: IO ()
 main = do
     input <- readFile "8.txt"
-    let instructions = map parseLine $ lines input
-        (finalMap, highest) = foldl executeInstruction (empty, 0) instructions
-        maxValue = maximum . snd . unzip . toList $ finalMap
-    print $ maxValue
-    print $ highest
+    let maxima = map (maximum . elems) . tail . scanl executeInstruction empty . map parseLine . lines $ input
+    print $ last maxima
+    print $ maximum maxima
