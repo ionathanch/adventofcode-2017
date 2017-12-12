@@ -3,12 +3,6 @@
 import Data.List (find)
 import Data.Maybe (catMaybes)
 
-checksum :: [[Int]] -> Int
-checksum = sum . map (\line -> maximum line - minimum line)
-
-divsum :: [[Int]] -> Int
-divsum   = sum . map divline
-
 divline :: [Int] -> Int
 divline ns = 
     uncurry div . head . catMaybes . map (\x -> Just (x,) <*> find (greaterAndDivisible x) ns) $ ns
@@ -16,7 +10,6 @@ divline ns =
 
 main :: IO ()
 main = do
-    input <- readFile "2.txt"
-    let grid = map (map read . words) $ lines input :: [[Int]]
-    print $ checksum grid
-    print $ divsum   grid
+    grid <- fmap (map (map read . words) . lines) $ readFile "2.txt"
+    print $ sum . map (\line -> maximum line - minimum line) $ grid
+    print $ sum . map divline $ grid
