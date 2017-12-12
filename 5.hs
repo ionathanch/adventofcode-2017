@@ -1,4 +1,4 @@
-import Data.IntMap (IntMap, insert, size, fromList, findWithDefault)
+import Data.IntMap (IntMap, insert, fromList, findWithDefault)
 
 type Length = Int
 type Index = Int
