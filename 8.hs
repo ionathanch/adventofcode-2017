@@ -1,9 +1,8 @@
-import Data.HashMap (Map, insert, alter, empty, toList, findWithDefault)
-import qualified Data.HashMap as M (lookup)
+import Data.HashMap (Map, alter, empty, toList, findWithDefault)
 
 data Instruction = I {
     reg :: String,
-    inc :: Int,
+    val :: Int,
     src :: String,
     fnc :: Int -> Bool
 }
@@ -17,22 +16,16 @@ getFnc s = case s of
     "==" -> (==)
     "!=" -> (/=)
 
-getOrSetZero :: String -> Map String Int -> (Int, Map String Int)
-getOrSetZero s m =
-    case M.lookup s m of
-        Just value -> (value, m)
-        Nothing    -> (0,     insert s 0 m)
-
 addToMaybe :: Int -> Maybe Int -> Maybe Int
 addToMaybe i (Just x) = Just $ i + x
 addToMaybe i Nothing  = Just i
 
 parseLine :: String -> Instruction
 parseLine s =
-    let (register : command : value : _ : source : function : argument : _) = words s
+    let (register : operation : value : _ : source : function : argument : _) = words s
     in I {
         reg = register,
-        inc = case command of
+        val = case operation of
             "inc" ->    read value
             "dec" -> (- read value),
         src = source,
@@ -40,12 +33,12 @@ parseLine s =
     }
 
 executeInstruction :: (Map String Int, Int) -> Instruction -> (Map String Int, Int)
-executeInstruction (m, highest) (I r i s f) =
-    let (value, newMap) = getOrSetZero s m
-        newHighest = max highest $ findWithDefault highest r newMap
-    in  if f value
-        then (alter (addToMaybe i) r newMap, newHighest)
-        else (newMap, highest)
+executeInstruction (m, highest) (I r v s f) =
+    let value      = findWithDefault 0 s m
+        newHighest = max highest $ findWithDefault highest r m
+    in  if   f value
+        then (alter (addToMaybe v) r m, newHighest)
+        else (m, highest)
 
 main :: IO ()
 main = do
