@@ -1,5 +1,5 @@
 import Data.List.Split (splitOn)
-import Data.IntMap (IntMap, findWithDefault)
+import Data.IntMap (IntMap, findWithDefault, keys)
 import Data.IntSet (IntSet, member, notMember, insert, delete, empty, size, findMin)
 import qualified Data.IntMap as M (fromList)
 import qualified Data.IntSet as S (fromList, null)
@@ -25,8 +25,6 @@ countGroups hashmap count hashset = if S.null hashset then count else
 
 main :: IO ()
 main = do
-    keyvals <- fmap (map parseLine . lines) $ readFile "12.txt"
-    let hashkeys = S.fromList . fst . unzip $ keyvals
-        hashmap  = M.fromList keyvals
+    hashmap <- fmap (M.fromList . map parseLine . lines) $ readFile "12.txt"
     print $ size $ visit hashmap 0 empty
-    print $ countGroups  hashmap 0 hashkeys
+    print $ countGroups  hashmap 0 . S.fromList . keys $ hashmap
