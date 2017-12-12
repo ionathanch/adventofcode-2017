@@ -1,49 +1,15 @@
-
-removeCancelled :: String -> String
-removeCancelled str =
-    let (_, removed) = foldl (\(prev, rs) curr -> 
-            case prev of 
-                '!'  -> ('\0',        rs)
-                '\0' -> (curr,        rs)
-                _    -> (curr, prev : rs))
-            (head str, "") (tail str)
-    in  reverse $ filter (/= '\0') removed
-
-removeGarbage :: String -> String
-removeGarbage str =
-    let (_, removed) = foldl (\(isGarbage, rs) curr ->
-            if   isGarbage
-            then (curr /= '>', rs)
-            else (curr == '<',
-                if   curr == '<' 
-                then rs 
-                else curr : rs))
-            (False, "") str
-    in  reverse $ filter (/= ',') removed
-
-countNonGarbage :: String -> Int
-countNonGarbage str =
-    let (_, removed) = foldl (\(isGarbage, rs) curr ->
-            if   isGarbage
-            then (curr /= '>', 
-                if   curr == '>'
-                then rs
-                else curr : rs)
-            else (curr == '<', rs))
-            (False, "") str
-    in  length removed
-
-countGroups :: String -> Int
-countGroups str =
-    let (_, total) = foldl (\(score, acc) curr -> 
-            case curr of
-                '{' -> (score + 1, acc + score)
-                '}' -> (score - 1, acc)) 
-            (1, 0) str
-    in total
+scoreAndCount :: String -> (Int, Int)
+scoreAndCount str =
+    let (_, _, _, score, count) = foldl f (False, False, 1, 0, 0) str
+    in  (score, count)
+    where f (isCancel, isGarbage, level, score, count) curr
+            | isCancel    = (False,       isGarbage,   level,     score,         count)
+            | isGarbage   = (curr == '!', curr /= '>', level,     score,         count + (fromEnum $ curr /= '>' && curr /= '!'))
+            | curr == '{' = (False,       False,       level + 1, score + level, count)
+            | curr == '}' = (False,       False,       level - 1, score,         count)
+            | curr == ',' = (False,       False,       level,     score,         count)
+            | curr == '<' = (False,       True,        level,     score,         count)
 
 main :: IO ()
 main = do
-    input <- readFile "9.txt"
-    print $ countGroups . removeGarbage . removeCancelled $ input
-    print $ countNonGarbage . removeCancelled $ input
+    readFile "9.txt" >>= print . scoreAndCount

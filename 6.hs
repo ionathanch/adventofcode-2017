@@ -1,29 +1,25 @@
 import Data.Foldable (toList)
+import Data.Maybe
 import Data.HashMap (Map, member, insert, findWithDefault, empty)
-import Data.Sequence (Seq, length, update, fromList, foldlWithIndex, mapWithIndex)
+import Data.Sequence (Seq, update, fromList, elemIndexL, mapWithIndex)
+import qualified Data.Sequence as S (length)
 
-type Bank   = Seq Int
-type HashableBank = [Int]
-type Config = (Bank, Map HashableBank Int)
-
-(%) :: Int -> Int -> Int
+type Bank = Seq Int
+type Config = (Bank, Map [Int] Int)
 (%) = mod
-
-(//) :: Int -> Int -> Int
 (//) = div
 
 getMaxMem :: Bank -> (Int, Int)
 getMaxMem bank =
-    foldlWithIndex (\(currIndex, currMax) index value -> if value > currMax then (index, value) else (currIndex, currMax)) (0, 0) bank
+    (fromJust $ elemIndexL (maximum bank) bank, maximum bank)
 
 nextBank :: Bank -> Bank
 nextBank bank =
-    let len = Data.Sequence.length bank
+    let len = S.length bank
         (index, value) = getMaxMem bank
-        zeroedBank = update index 0 bank
-        mappedBank = fmap (+ value // len) zeroedBank
-        indicesToUpdate = fmap ((% len) . (+ index)) [1..value % len]
-    in  mapWithIndex (\i v -> if i `elem` indicesToUpdate then v + 1 else v) mappedBank
+        newBank = fmap (+ value // len) $ update index 0 bank
+        indices = fmap (% len) [index + 1..index + value % len]
+    in  mapWithIndex (\i v -> v + fromEnum (i `elem` indices)) newBank
 
 
 cycles :: Int -> Config -> (Int, Int)
@@ -37,6 +33,5 @@ cycles prevCount (prevBank, banks) =
 
 main :: IO ()
 main = do
-    input <- readFile "6.txt"
-    let bank = fromList $ fmap read $ words input :: Bank
+    bank <- fmap (fromList . map read . words) $ readFile "6.txt"
     print $ cycles 0 (bank, empty)

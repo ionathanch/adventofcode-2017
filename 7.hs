@@ -16,10 +16,10 @@ minOrZero 0 y = y
 minOrZero x y = min x y
 
 getWeights :: Forest (Weight, Int) -> [Weight]
-getWeights ts = fmap (\(Node (_, weight) _) -> weight) ts
+getWeights = fmap (\(Node (_, weight) _) -> weight)
 
 findRootWithWeight :: Int -> Forest (Weight, Int) -> Weight
-findRootWithWeight w ts = foldr (\(Node (root, weight) _) acc -> if weight == w then root else acc) 0 ts
+findRootWithWeight w = foldr (\(Node (root, weight) _) acc -> if weight == w then root else acc) 0
 
 -- input:  [Weight > 0] where all weights are the same except one
 -- output: (difference between the median weight and the minority weight, the minority weight)
@@ -35,7 +35,7 @@ parseLine :: String -> (Program, (Weight, Programs))
 parseLine line =
     let nameAndWeight : programsString : _ = splitOn ")"  line
         name          : weight         : _ = splitOn " (" nameAndWeight
-        programs = discardEmpty $ splitOn ", " $ last $ splitOn " -> " programsString
+        programs = discardEmpty . splitOn ", " . last . splitOn " -> " $ programsString
     in (name, (read weight, programs))
 
 getBottom :: Map Program (Weight, Programs) -> [(Program, (Weight, Programs))] -> Program
@@ -54,7 +54,7 @@ mapToTree m = unfoldTree (\s -> findWithDefault undefined s m)
 cumulate :: Tree Weight -> Tree (Weight, Int)
 cumulate (Node root forest) =
     let newForest        = map cumulate forest
-        cumulativeWeight = (+ root) . sum $ getWeights newForest
+        cumulativeWeight = (+ root) . sum . getWeights $ newForest
     in  Node { rootLabel = (root, cumulativeWeight), subForest = newForest }
 
 findBalanced :: Tree (Weight, Int) -> Int
@@ -66,9 +66,8 @@ findBalanced (Node _ forest) =
         
 main :: IO ()
 main = do
-    input <- readFile "7.txt"
-    let programsList = map parseLine $ lines input
-        programsMap  = fromList  programsList
+    programsList <- fmap (map parseLine . lines) $ readFile "7.txt"
+    let programsMap  = fromList  programsList
         bottomName   = getBottom programsMap programsList
         balanced     = findBalanced . cumulate $ mapToTree programsMap bottomName
         -- programsTree = mapToTree programsMap bottomName

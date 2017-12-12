@@ -24,4 +24,4 @@ main :: IO ()
 main = do
     coordinates <- fmap (map getCoordinates . splitOn ",") $ readFile "11.txt"
     print $ getDistance $ fold coordinates
-    print $ maximum . map getDistance $ scanl mappend mempty coordinates
+    print $ maximum . map getDistance . scanl mappend mempty $ coordinates

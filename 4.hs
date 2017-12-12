@@ -1,14 +1,13 @@
-import Data.List
-import Data.Set
+import Data.List (sort)
+import Data.Set (toAscList, fromList)
 
 isPassphraseValid :: [String] -> Bool
 isPassphraseValid ws = sort ws == (toAscList . fromList) ws
 
 main :: IO ()
 main = do
-    input <- readFile "4.txt"
-    let passphrases = fmap words $ lines input
-    let valids = sum $ fmap (fromEnum . isPassphraseValid) passphrases
+    passphrases <- fmap (map words . lines) $ readFile "4.txt"
+    let valids      = sum $ map (fromEnum . isPassphraseValid) passphrases
+    let stillValids = sum $ map (fromEnum . isPassphraseValid . (map sort)) passphrases
     print $ valids
-    let stillValids = sum $ fmap (fromEnum . isPassphraseValid . (fmap sort)) passphrases
     print $ stillValids

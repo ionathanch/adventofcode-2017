@@ -1,4 +1,6 @@
-import qualified Data.Map as Map
+import Data.IntMap (IntMap, findWithDefault, insert, fromList)
+
+type Store = IntMap Int
 
 squareRoot :: Floating a => Int -> a
 squareRoot = sqrt . fromIntegral
@@ -11,13 +13,11 @@ getDownstairs n =
     let level = getLevel n
     in  n - (8 * level - 7 + 2 * ((n - (2 * level - 1) ^ 2) `div` (2 * level)))
 
-type Store = Map.Map Int Int
-
 getValue :: Int -> Store -> Int
-getValue k m = Map.findWithDefault undefined k m 
+getValue k m = findWithDefault undefined k m 
     
 computeValue :: Int -> Store -> Store
-computeValue n m = Map.insert n value m
+computeValue n m = insert n value m
     where 
         level          = getLevel n
         downstairs     = getDownstairs n
@@ -48,6 +48,5 @@ computeUntil max n m =
 
 main :: IO ()
 main = do
-    let initialStore = Map.fromList $ zip [1..9] [1, 1, 2, 4, 5, 10, 11, 23, 25]
+    let initialStore = fromList $ zip [1..9] [1, 1, 2, 4, 5, 10, 11, 23, 25]
     print $ computeUntil 368078 10 initialStore
-        
