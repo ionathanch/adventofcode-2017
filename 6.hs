@@ -3,10 +3,14 @@ import Data.HashMap
 import Data.Sequence
 
 type Bank   = Seq Int
-type Config = (Bank, Data.HashMap.Map [Int] Int)
+type HashableBank = [Int]
+type Config = (Bank, Data.HashMap.Map HashableBank Int)
 
 (%) :: Int -> Int -> Int
 (%) = mod
+
+(//) :: Int -> Int -> Int
+(//) = div
 
 getMaxMem :: Bank -> (Int, Int)
 getMaxMem bank =
@@ -17,18 +21,19 @@ nextBank bank =
     let len = Data.Sequence.length bank
         (index, value) = getMaxMem bank
         zeroedBank = Data.Sequence.update index 0 bank
-        mappedBank = fmap (+ value `div` len) zeroedBank
-        indicesToUpdate = fmap (% len) [(index + 1)..(index + value % len)]
+        mappedBank = fmap (+ value // len) zeroedBank
+        indicesToUpdate = fmap ((% len) . (+ index)) [1..value % len]
     in  mapWithIndex (\i v -> if i `elem` indicesToUpdate then v + 1 else v) mappedBank
 
 
 cycles :: Int -> Config -> (Int, Int)
-cycles count (prevBank, configs) =
-    let bank = nextBank prevBank
-        hashableBank    = Data.Foldable.toList bank
-    in  if   member hashableBank configs
-        then (count + 1, (count + 1) - findWithDefault undefined hashableBank configs)
-        else cycles (count + 1) (bank, insert hashableBank (count + 1) configs)
+cycles prevCount (prevBank, banks) =
+    let count = prevCount + 1
+        bank = nextBank prevBank
+        hashableBank = Data.Foldable.toList bank
+    in  if   member hashableBank banks
+        then (count, count - findWithDefault undefined hashableBank banks)
+        else cycles count (bank, insert hashableBank count banks)
 
 main :: IO ()
 main = do
