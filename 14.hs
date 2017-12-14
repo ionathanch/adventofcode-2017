@@ -2,12 +2,15 @@ import Data.List.Split (chunksOf)
 import Data.Char (ord)
 import Data.Bits (xor)
 import Text.Printf (printf)
-import Data.Matrix (Matrix, fromLists, safeGet)
-import Data.HashSet (Set, member, insert)
+import Data.Graph (graphFromEdges, scc)
+import Data.Sequence (Seq, index, fromList)
 
 type Length = Int
 type State = ([Int], Int, Int)
-(%) = mod
+type Edge = (Int, Int, [Int])
+(%)  = mod
+(//) = div
+(!)  = index
 
 twist :: State -> Length -> State
 twist (ring, position, skip) len =
@@ -25,19 +28,26 @@ sparseHash lengths =
     let (hashed, _, _) = iterate (hash lengths) ([0..255], 0, 0) !! 64
     in  concat . map (printf "%08b" . foldr xor 0) . chunksOf 16 $ hashed
 
-visit :: Matrix Int -> (Int, Int) -> Set (Int, Int) -> Set (Int, Int)
-visit matrix (row, col) seen = if member (row, col) seen then seen else 
-    let newSeen = insert (row, col) seen
-    in
-    case safeGet row col matrix of 
-        Nothing -> seen
-        Just 0  -> newSeen
-        Just 1  -> foldr (visit matrix) newSeen [(row + 1, col), (row - 1, col), (row, col + 1), (row, col - 1)]
+getEdges :: Int -> (Seq Char, [Edge]) -> (Seq Char, [Edge])
+getEdges ind (str, edges) = if str ! ind == '0' then (str, edges) else
+    let row = ind // 128
+        col = ind %  128
+        neighbours = [(row + 1, col    ),
+                      (row - 1, col    ),
+                      (row,     col + 1),
+                      (row,     col - 1)]
+        validNeighbours = filter isOne . map toIndex . filter inBounds $ neighbours
+    in  (str, (ind, ind, validNeighbours) : edges)
+    where 
+        inBounds (r, c) = r >= 0 && r <= 127 && c >= 0 && c <= 127
+        toIndex  (r, c) = r * 128 + c
+        isOne i = (str ! i) == '1'
 
 main :: IO ()
 main = do
-    let hashes = map (sparseHash . (++ [17, 31, 73, 47, 23]) . map ord . ("ffayrhll-" ++) . show) [0..127]
-        used   = length . filter (== '1') . concat $ hashes
-        matrix = fromLists hashes
+    let hashes = concat $ map (sparseHash . (++ [17, 31, 73, 47, 23]) . map ord . ("ffayrhll-" ++) . show) [0..127]
+        used = length . filter (== '1') $ hashes
+        (_, edges)  = foldr getEdges (fromList hashes, []) [0..128 * 128 - 1]
+        (graph, _, _) = graphFromEdges edges
     print $ used
-    mapM_ print hashes
+    print $ length . scc $ graph
