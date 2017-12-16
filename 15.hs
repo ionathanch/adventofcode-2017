@@ -1,21 +1,23 @@
-import Data.Int (Int16)
+{-# LANGUAGE BangPatterns #-}
+import Data.Function (on)
+import Data.Bits ((.&.))
 
-gen :: Int -> Int -> Int -> [Int]
-gen divisor factor seed = iterate (next divisor factor) seed
-    where next d f i = (f * i) `mod` d
-
-judge :: Int -> [Int] -> [Int] -> Int
-judge n a b = length . filter (uncurry eq) . take n $ zip a b
-    where eq i j = (fromIntegral i :: Int16) == (fromIntegral j :: Int16)
-
-divisible :: Int -> Int -> Bool
-divisible d = (== 0) . (`mod` d)
+divisor = 2147483647
+factors = (16807, 48271)
+seed    = (634,   301)
+        
+count :: (Int, Int) -> (Int, Int) -> Int -> Int -> Int
+count pair masks acc times =
+    if times == 0 then acc else
+    let !next = nextMaskBy <$$> factors <**> masks <**> pair
+        !eq   = fromEnum $ uncurry ((==) `on` (.&. 0xffff)) next
+    in count next masks (acc + eq) (times - 1)
+    where
+        h      <$$> (x, y) = (h x, h y)
+        (f, g) <**> (x, y) = (f x, g y)
+        nextMaskBy f m s  = let t = (f * s) `mod` divisor in if (t .&. m) == 0 then t else nextMaskBy f m t
 
 main :: IO ()
 main = do
-    let genA    = gen 2147483647 16807 634
-        genB    = gen 2147483647 48271 301
-        gen4A   = filter (divisible 4) genA
-        gen8B   = filter (divisible 8) genB
-    print $ judge 40000000 genA  genB 
-    print $ judge 5000000  gen4A gen8B
+    print $ count seed (0, 0) 0 40000000
+    print $ count seed (3, 7) 0 5000000
