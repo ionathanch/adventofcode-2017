@@ -1,47 +1,49 @@
 {-# LANGUAGE BangPatterns #-}
 import Data.List (foldl')
 import Data.List.Split (splitOn)
-import Data.Char (ord, chr)
 import Data.Bits ((.&.))
 import Data.Function ((&))
 import Data.Bimap (Bimap, fromList, toAscList, (!), (!>), insert)
-import qualified Data.Bimap as B (map)
 
-type Programs = Bimap Int Int
-type Lookup   = Programs -> Int -> Int
-type Insert   = Int -> Int -> Programs -> Programs
+type Programs = Bimap Int Char
+type State    = (Int, Programs)
 
-spin :: Int -> Programs -> Programs
-spin s = B.map (\v -> (v + s) .&. 15)
+exchange :: Int -> Int -> State -> State
+exchange x y (s, programs) =
+    let spunX = (x + 16 - s) .&. 15
+        spunY = (y + 16 - s) .&. 15
+    in  (s, insert spunX (programs ! spunY) . insert spunY (programs ! spunX) $ programs)
 
-swap :: Lookup -> Insert -> Int -> Int -> Programs -> Programs
-swap (!!!) ins keyX keyY bimap =
-    ins keyX (bimap !!! keyY) . ins keyY (bimap !!! keyX) $ bimap
+partner  :: Char -> Char -> State -> State
+partner  p q (s, programs) =
+    (s, insert (programs !> q) p . insert (programs !> p) q $ programs)
 
-parseMove :: String -> Programs -> Programs
+addSpin :: Int -> State -> State
+addSpin s' (s, p) = ((s + s') .&. 15, p)
+
+spin :: Int -> String -> String
+spin s str = drop (16 - s) str ++ take (16 - s) str
+
+parseMove :: String -> State -> State
 parseMove str =
-    let exchange = swap (!)  insert
-        partner  = swap (!>) insertR
-    in  case head str of
-        's' ->  spin . read $ tail str
-        'x' ->  let x    :    y : [] = splitOn "/" $ tail str
-                in  exchange (read x)          (read y)
+    case head str of
+        's' ->  addSpin . read $ tail str
+        'x' ->  let x : y : [] = splitOn "/" $ tail str
+                in  exchange (read x) (read y)
         'p' ->  let p : '/' : q : [] = tail str
-                in  partner  (ord p - ord 'a') (ord q - ord 'a')
-    where insertR b a = insert a b
+                in  partner p q
 
-dance :: [Programs -> Programs] -> Programs -> Programs
-dance moves programs = foldl' (&) programs moves
+dance :: [State -> State] -> State -> State
+dance moves state = foldl' (&) state moves
 
-danceN :: [Programs -> Programs] -> Programs -> Int -> Programs
-danceN _     programs 0 = programs
-danceN moves programs n = let !newPrograms = dance moves programs in danceN moves newPrograms (n-1)
+danceN :: [State -> State] -> State -> Int -> State
+danceN _     state 0 = state
+danceN moves state n = let !newState = dance moves state in danceN moves newState (n-1)
 
-getOrder :: Programs -> String
-getOrder = map (chr . (+ ord 'a') . snd) . toAscList
+getOrder :: State -> String
+getOrder (s, programs) = spin s . snd . unzip . toAscList $ programs
 
 main :: IO ()
 main = do
     moves <- fmap (map parseMove . splitOn ",") $ readFile "16.txt"
-    print $ getOrder $ dance  moves (fromList $ zip [0..15] [0..15])
-    --print $ getOrder $ danceN moves (fromList $ zip [0..15] [0..15]) 1000000000
+    print $ getOrder $ danceN moves (0, fromList $ zip [0..15] ['a'..'p']) 1
