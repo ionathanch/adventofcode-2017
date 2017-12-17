@@ -1,23 +1,22 @@
 {-# LANGUAGE BangPatterns #-}
-import Data.List (foldl')
-(%) = mod
+(%)   = mod
+steps = 312
 
-ith :: Int -> Int -> Int
-ith i steps =
-    let (position, list) = foldl' (\(currPos, currList) n -> 
-            let newPos  = (currPos + steps % n + 1) % n
-            in  (newPos, take newPos currList ++ [n] ++ drop newPos currList))
-            (0, [0]) [1..i]
-    in  list !! (position + 1)
+postNth :: Int -> Int -> [Int] -> Int
+postNth 2018 pos list = list !! (pos + 1)
+postNth n    pos list =
+    let !newPos  = (pos + steps % n + 1) % n
+        !newList = take newPos list ++ [n] ++ drop newPos list
+    in  postNth (n + 1) newPos newList
 
-oneth :: Int -> Int -> Int
-oneth i steps =
-    snd $ foldl' (\(currPos, currOneth) n -> 
-        let newPos = (currPos + steps % n + 1) % n
-        in  (newPos, if newPos == 0 then n else currOneth)) 
-        (0, 1) [1..i]
+oneNth  :: Int -> Int -> Int -> Int
+oneNth  50000001 _   oneth = oneth
+oneNth  n        pos oneth =
+    let !newPos   = (pos + steps % n + 1) % n
+        !newOneth = if newPos == 0 then n else oneth
+    in  oneNth (n + 1) newPos newOneth
 
 main :: IO ()
 main = do
-    print $ ith   2017     312
-    print $ oneth 50000000 312 
+    print $ postNth 1 1 [0]
+    print $ oneNth  1 1 1
