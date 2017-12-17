@@ -1,33 +1,30 @@
-{-# LANGUAGE BangPatterns #-}
-import Data.List (foldl')
+import Data.List (foldl', elemIndex)
 import Data.List.Split (splitOn)
-import Data.Bits ((.&.))
 import Data.Function ((&))
-import Data.Bimap (Bimap, fromList, toAscList, (!), (!>), insert)
+import Data.Map.Strict (Map, (!), insert, fromList, toList, toAscList)
 
-type Programs = Bimap Int Char
-type State    = (Int, Programs)
+type Positions = Map Int  Int
+type Swaps     = Map Char Char
+type State     = (Int, Positions, Swaps)
+(%) = mod
 
 exchange :: Int -> Int -> State -> State
-exchange x y (s, programs) =
-    let spunX = (x + 16 - s) .&. 15
-        spunY = (y + 16 - s) .&. 15
-    in  (s, insert spunX (programs ! spunY) . insert spunY (programs ! spunX) $ programs)
+exchange x y (s, positions, swaps) =
+    let spunX = (x + 16 - s) % 16
+        spunY = (y + 16 - s) % 16
+    in  (s, insert spunX (positions ! spunY) . insert spunY (positions ! spunX) $ positions, swaps)
 
 partner  :: Char -> Char -> State -> State
-partner  p q (s, programs) =
-    (s, insert (programs !> q) p . insert (programs !> p) q $ programs)
+partner  p q (s, positions, swaps) =
+    (s, positions, insert p (swaps ! q) . insert q (swaps ! p) $ swaps)
 
-addSpin :: Int -> State -> State
-addSpin s' (s, p) = ((s + s') .&. 15, p)
-
-spin :: Int -> String -> String
-spin s str = drop (16 - s) str ++ take (16 - s) str
+spin :: Int -> State -> State
+spin s' (s, positions, swaps) = ((s + s') % 16, positions, swaps)
 
 parseMove :: String -> State -> State
 parseMove str =
     case head str of
-        's' ->  addSpin . read $ tail str
+        's' ->  spin . read $ tail str
         'x' ->  let x : y : [] = splitOn "/" $ tail str
                 in  exchange (read x) (read y)
         'p' ->  let p : '/' : q : [] = tail str
@@ -36,14 +33,19 @@ parseMove str =
 dance :: [State -> State] -> State -> State
 dance moves state = foldl' (&) state moves
 
-danceN :: [State -> State] -> State -> Int -> State
-danceN _     state 0 = state
-danceN moves state n = let !newState = dance moves state in danceN moves newState (n-1)
-
-getOrder :: State -> String
-getOrder (s, programs) = spin s . snd . unzip . toAscList $ programs
+applyDance :: State -> String -> String
+applyDance (s, positions, swaps) str =
+    let positionsList = snd . unzip . toAscList $ positions
+        swapsReversed = fromList . (uncurry $ flip zip) . unzip . toList $ swaps
+    in map (swapsReversed !) . (drop (16 - s) <++> take (16 - s)) . map (str !!) $ positionsList
+    where (f <++> g) p = f p ++ g p
 
 main :: IO ()
 main = do
     moves <- fmap (map parseMove . splitOn ",") $ readFile "16.txt"
-    print $ getOrder $ danceN moves (0, fromList $ zip [0..15] ['a'..'p']) 1
+    let ip = [0..15]; ap = ['a'..'p']
+        state  = dance moves (0, fromList $ zip ip ip, fromList $ zip ap ap)
+        dances = iterate (applyDance state) ap
+        Just cycleSize = (+ 1) <$> (elemIndex ap $ tail dances)
+    print $ dances !! 1
+    print $ dances !! (1000000000 % cycleSize)
