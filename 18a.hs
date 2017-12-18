@@ -1,3 +1,4 @@
+import Text.Read (readMaybe)
 import Data.Sequence (Seq, fromList, index)
 import Data.Vector.Unboxed (Vector, (!), (//))
 import qualified Data.Vector.Unboxed as V (replicate)
@@ -22,7 +23,9 @@ getValue value registers = case value of
 
 parseValue :: String -> Value
 parseValue str =
-    Register $ head str -- TODO: implement correctly!
+    case readMaybe str of
+        Just i  -> Number i
+        Nothing -> Register $ head str
 
 son :: Value -> State -> State
 son freq (reg, pos, _, rec) = 
@@ -34,9 +37,9 @@ rcv v (reg, pos, freq, rec) =
 
 app :: (Int -> Int -> Int) -> Value -> Value -> State -> State
 app f i v (reg, pos, freq, rec) = 
-    let index = getIndex i
-        value = getValue v reg
-    in (reg // [(index, reg ! index `f` value)], pos + 1, freq, rec)
+    let ind = getIndex i
+        val = getValue v reg
+    in (reg // [(ind, reg ! ind `f` val)], pos + 1, freq, rec)
 
 jgz :: Value -> Value -> State -> State
 jgz condition offset (reg, pos, freq, rec) =
@@ -47,12 +50,12 @@ parseLine str =
     let op : vs = words str
     in  case op of
         "snd" -> son $ parseValue $ head vs
-        "set" -> app const (parseValue $ head vs) (parseValue $ last vs)
-        "add" -> app (+)   (parseValue $ head vs) (parseValue $ last vs)
-        "mul" -> app (*)   (parseValue $ head vs) (parseValue $ last vs)
-        "mod" -> app mod   (parseValue $ head vs) (parseValue $ last vs)
-        "rcv" -> rcv $ parseValue $ head vs
-        "jgz" -> jgz (parseValue $ head vs) (parseValue $ last vs)
+        "set" -> app (flip const) (parseValue $ head vs) (parseValue $ last vs)
+        "add" -> app (+)          (parseValue $ head vs) (parseValue $ last vs)
+        "mul" -> app (*)          (parseValue $ head vs) (parseValue $ last vs)
+        "mod" -> app mod          (parseValue $ head vs) (parseValue $ last vs)
+        "rcv" -> rcv $             parseValue $ head vs
+        "jgz" -> jgz              (parseValue $ head vs) (parseValue $ last vs)
 
 -- precondition: pos < length instructions
 executeNextInstruction :: Seq Instruction -> State -> State
@@ -66,6 +69,6 @@ recover instructions (reg, pos, freq, rec) =
 
 main :: IO ()
 main = do
-    instructions <- fmap (fromList . map parseLine . lines) $ readFile "18.hs"
+    instructions <- fmap (fromList . map parseLine . lines) $ readFile "18.txt"
     let initialState = (V.replicate 5 0, 0, 0, 0)
     print $ recover instructions initialState
