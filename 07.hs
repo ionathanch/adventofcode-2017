@@ -66,7 +66,7 @@ findBalanced (Node _ forest) =
         
 main :: IO ()
 main = do
-    programsList <- fmap (map parseLine . lines) $ readFile "7.txt"
+    programsList <- fmap (map parseLine . lines) $ readFile "07.txt"
     let programsMap  = fromList  programsList
         bottomName   = getBottom programsMap programsList
         balanced     = findBalanced . cumulate $ mapToTree programsMap bottomName

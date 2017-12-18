@@ -10,6 +10,6 @@ divline ns =
 
 main :: IO ()
 main = do
-    grid <- fmap (map (map read . words) . lines) $ readFile "2.txt"
+    grid <- fmap (map (map read . words) . lines) $ readFile "02.txt"
     print $ sum . map (\line -> maximum line - minimum line) $ grid
     print $ sum . map divline $ grid

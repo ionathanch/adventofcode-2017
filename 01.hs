@@ -8,6 +8,6 @@ halfwaySum ns =
 
 main :: IO ()
 main = do 
-    nums <- fmap (map (read . pure)) $ readFile "1.txt"
+    nums <- fmap (map (read . pure)) $ readFile "01.txt"
     print $ circularSum nums
     print $ halfwaySum nums

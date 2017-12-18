@@ -12,4 +12,4 @@ scoreAndCount str =
 
 main :: IO ()
 main = do
-    readFile "9.txt" >>= print . scoreAndCount
+    readFile "09.txt" >>= print . scoreAndCount
