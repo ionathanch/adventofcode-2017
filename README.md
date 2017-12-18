@@ -7,13 +7,13 @@ Hopefully most of these solutions are fairly self-explanatory. I'll write longer
 ## Runtimes
 These are the runtimes of only one trial but the variances are fairly small and the focus is on the differences in runtime among the different solutions to see which have comparatively worse performance.
 
-| Day | Runtime (s) |
-|-----|-------------|
+| Day | Runtime (s) | With -O2 |
+|-----|-------------|----------|
 | 01  |  0.044      |
 | 02  |  0.078      |
 | 03  |  0.074      |
 | 04  |  0.082      |
-| 05  | 27.430      |
+| 05  | 16.833      | 10.975
 | 06  |  0.398      |
 | 07  |  0.148      |
 | 08  |  0.137      |
@@ -21,12 +21,14 @@ These are the runtimes of only one trial but the variances are fairly small and 
 | 10  |  0.340      |
 | 11  |  0.119      |
 | 12  |  0.168      |
-| 13  |  2.136      |
-| 14  |  8.211      |
+| 13  |  2.136      |  0.503
+| 14  |  8.211      |  5.206
 | 15  | 62.242      |
 | 16  |  0.462      |
-| 17  |  6.753      |
+| 17  |  6.753      |  1.865
 
-Problems that should be optimized further: 05, 15
+Problems that should be optimized further: 15
 
-Problems that could use some work: 14, 17, 13
+Problems that could use some work: 05, 14
+
+Problems that are good enough with optimizations: 17, 13
