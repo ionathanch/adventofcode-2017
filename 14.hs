@@ -3,7 +3,7 @@ import Data.Char (ord)
 import Data.Bits (xor)
 import Text.Printf (printf)
 import Data.Graph (scc, graphFromEdges)
-import Data.Tuple.Select (sel1, sel2)
+import Data.Tuple.Select (sel1)
 import Data.Sequence (Seq, index, fromList)
 
 type Length = Int
@@ -48,4 +48,4 @@ main :: IO ()
 main = do
     let hashes = concat $ map (sparseHash . (++ [17, 31, 73, 47, 23]) . map ord . ("ffayrhll-" ++) . show) [0..127]
     print $ length . filter (== '1') $ hashes
-    print $ length . scc . sel1 . graphFromEdges . sel2 $ foldr getEdges (fromList hashes, []) [0..128 * 128 - 1]
+    print $ length . scc . sel1 . graphFromEdges . snd $ foldr getEdges (fromList hashes, []) [0..128 * 128 - 1]
