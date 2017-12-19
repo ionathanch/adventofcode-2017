@@ -21,12 +21,6 @@ getValue value registers = case value of
     Number i -> i
     c -> registers ! (getIndex c)
 
-parseValue :: String -> Value
-parseValue str =
-    case readMaybe str of
-        Just i  -> Number i
-        Nothing -> Register $ head str
-
 son :: Value -> State -> State
 son freq (reg, pos, _, rec) = 
     (reg, pos + 1, getValue freq reg, rec)
@@ -56,6 +50,9 @@ parseLine str =
         "mod" -> app mod          (parseValue $ head vs) (parseValue $ last vs)
         "rcv" -> rcv $             parseValue $ head vs
         "jgz" -> jgz              (parseValue $ head vs) (parseValue $ last vs)
+    where parseValue s = case readMaybe s of 
+            Just i  -> Number i
+            Nothing -> Register $ head s
 
 -- precondition: pos < length instructions
 executeNextInstruction :: Seq Instruction -> State -> State
