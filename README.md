@@ -27,6 +27,7 @@ These are the runtimes of only one trial but the variances are fairly small and 
 | 16  |  0.462      |
 | 17  |  6.753      |  1.865
 | 18  |  0.118      |
+| 19  |  0.026      |
 
 Problems that should be optimized further: 15
 
