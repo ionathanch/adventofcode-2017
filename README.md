@@ -7,8 +7,8 @@ Hopefully most of these solutions are fairly self-explanatory. I'll write longer
 ## Runtimes
 These are the runtimes of only one trial but the variances are fairly small and the focus is on the differences in runtime among the different solutions to see which have comparatively worse performance.
 
-| Day | Runtime (s) | With -O2 |
-|-----|-------------|----------|
+| Day | Runtime (s) | With `-O2` |
+|-----|-------------|------------|
 | 01  |  0.044      |
 | 02  |  0.078      |
 | 03  |  0.074      |
