@@ -24,6 +24,6 @@ anyCaught firewalls delay =
 
 main :: IO ()
 main = do
-    firewalls <- fmap (map parseLine . lines) $ readFile "13.txt"
+    firewalls <- map parseLine . lines <$> readFile "13.txt"
     print $ severity firewalls
     print $ findIndex not $ map (anyCaught firewalls) [0..]

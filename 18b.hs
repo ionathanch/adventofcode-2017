@@ -50,43 +50,43 @@ getValue v r = case v of
 -- OPERATIONS
 
 sen :: Value -> Instruction
-sen v Zero (State p0 p1 s c) =
-    State p0 { 
-        position = position p0 + 1 
-    } p1 { 
-        queue = queue p1 |> getValue v (registers p0) 
-    } (fst s, False) c
+sen v Zero state@(State p0 p1 s c) =
+    state { 
+        zero = p0 { position = position p0 + 1 }, 
+        one  = p1 { queue = queue p1 |> getValue v (registers p0) }, 
+        stop = (fst s, False)
+    }
 sen v One state = swap . sen v Zero . swap $ state { count = count state + 1 }
 
 rcv :: Value -> Instruction
-rcv i Zero (State p0 p1 s c) =
-    if S.null $ queue p0 then State p0 p1 (True, snd s) c else
+rcv i Zero state@(State p0 p1 s c) =
+    if S.null $ queue p0 then state { stop = (True, snd s) } else
     let (que, val) = pop $ queue p0
-    in  State p0 {
-        registers = registers p0 // [(getIndex i, val)],
-        position  = position  p0 + 1,
-        queue     = que
-    } p1 s c
+    in  state { zero = p0 {
+            registers = registers p0 // [(getIndex i, val)],
+            position  = position  p0 + 1,
+            queue     = que
+        }}
     where pop q = (deleteAt 0 q, q `index` 0)
 rcv i One state = swap . rcv i Zero . swap $ state
 
 app :: (Int -> Int -> Int) -> Value -> Value -> Instruction
-app f i v Zero (State p0 p1 s c) = 
+app f i v Zero state@(State p0 p1 s c) = 
     let reg = registers p0
         ind = getIndex i
         val = getValue v reg
-    in  State p0 {
-        registers = reg // [(ind, reg ! ind `f` val)],
-        position  = position p0 + 1
-    } p1 s c
+    in  state { zero = p0 {
+            registers = reg // [(ind, reg ! ind `f` val)],
+            position  = position p0 + 1
+        }}
 app f i v One state = swap . app f i v Zero . swap $ state
 
 jgz :: Value -> Value -> Instruction
-jgz condition offset Zero (State p0 p1 s c) =
+jgz condition offset Zero state@(State p0 p1 s c) =
     let reg = registers p0
-    in State p0 {
-        position = position p0 + if getValue condition reg > 0 then getValue offset reg else 1
-    } p1 s c
+    in  state { zero = p0 {
+            position = position p0 + if getValue condition reg > 0 then getValue offset reg else 1
+        }}
 jgz condition offset One state = swap . jgz condition offset Zero . swap $ state
 
 -- PARSE
@@ -123,6 +123,6 @@ getCount instructions state =
 
 main :: IO ()
 main = do
-    instructions <- fmap (fromList . map parseLine . lines) $ readFile "18.txt"
+    instructions <- fromList . map parseLine . lines <$> readFile "18.txt"
     let initialState = (State (Program (V.replicate 5 0) 0 empty) (Program (V.replicate 5 0 // [(4, 1)]) 0 empty) (False, False) 0)
     print $ getCount instructions initialState

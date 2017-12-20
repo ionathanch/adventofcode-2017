@@ -15,7 +15,7 @@ exchange x y (s, positions, swaps) =
     in  (s, insert spunX (positions ! spunY) . insert spunY (positions ! spunX) $ positions, swaps)
 
 partner  :: Char -> Char -> State -> State
-partner  p q (s, positions, swaps) =
+partner p q (s, positions, swaps) =
     (s, positions, insert p (swaps ! q) . insert q (swaps ! p) $ swaps)
 
 spin :: Int -> State -> State
@@ -37,12 +37,12 @@ applyDance :: State -> String -> String
 applyDance (s, positions, swaps) str =
     let positionsList = snd . unzip . toAscList $ positions
         swapsReversed = fromList . (uncurry $ flip zip) . unzip . toList $ swaps
-    in map (swapsReversed !) . (drop (16 - s) <++> take (16 - s)) . map (str !!) $ positionsList
+    in  map (swapsReversed !) . (drop (16 - s) <++> take (16 - s)) . map (str !!) $ positionsList
     where (f <++> g) p = f p ++ g p
 
 main :: IO ()
 main = do
-    moves <- fmap (map parseMove . splitOn ",") $ readFile "16.txt"
+    moves <- map parseMove . splitOn "," <$> readFile "16.txt"
     let ip = [0..15]; ap = ['a'..'p']
         state  = dance moves (0, fromList $ zip ip ip, fromList $ zip ap ap)
         dances = iterate (applyDance state) ap

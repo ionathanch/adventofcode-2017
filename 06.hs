@@ -33,5 +33,5 @@ cycles prevCount (prevBank, banks) =
 
 main :: IO ()
 main = do
-    bank <- fmap (fromList . map read . words) $ readFile "06.txt"
+    bank <- fromList . map read . words <$> readFile "06.txt"
     print $ cycles 0 (bank, empty)

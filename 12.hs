@@ -9,6 +9,6 @@ parseLine str =
 
 main :: IO ()
 main = do
-    graph <- fmap (array (0, 1999) . map parseLine . lines) $ readFile "12.txt"
+    graph <- array (0, 1999) . map parseLine . lines <$> readFile "12.txt"
     print $ length $ reachable graph 0
     print $ length $ scc graph

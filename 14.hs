@@ -30,7 +30,7 @@ sparseHash lengths =
     in  concat . map (printf "%08b" . foldr xor 0) . chunksOf 16 $ hashed
 
 getEdges :: Int -> (Seq Char, [Edge]) -> (Seq Char, [Edge])
-getEdges ind (str, edges) = if str ! ind == '0' then (str, edges) else
+getEdges ind se@(str, edges) = if str ! ind == '0' then se else
     let row = ind // 128
         col = ind %  128
         neighbours = [(row + 1, col    ),

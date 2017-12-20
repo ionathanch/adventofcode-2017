@@ -33,19 +33,17 @@ getDiffMinority ns =
 
 parseLine :: String -> (Program, (Weight, Programs))
 parseLine line =
-    let nameAndWeight : programsString : _ = splitOn ")"  line
+    let nameAndWeight : programsString : _ = splitOn  ")" line
         name          : weight         : _ = splitOn " (" nameAndWeight
         programs = discardEmpty . splitOn ", " . last . splitOn " -> " $ programsString
     in (name, (read weight, programs))
 
 getBottom :: Map Program (Weight, Programs) -> [(Program, (Weight, Programs))] -> Program
 getBottom m l = bottomName
-    where 
-        (bottomName, _) : _ = toList $ foldr 
-            (\(name, (_, programs)) set -> 
-                case programs of
-                    [] -> delete name set
-                    ps -> foldr delete set ps)
+    where (bottomName, _) : _ = toList $ foldr (\(name, (_, programs)) set -> 
+            case programs of
+                [] -> delete name set
+                ps -> foldr delete set ps)
             m l
 
 mapToTree :: Map Program (Weight, Programs) -> Program -> Tree Weight
@@ -66,7 +64,7 @@ findBalanced (Node _ forest) =
         
 main :: IO ()
 main = do
-    programsList <- fmap (map parseLine . lines) $ readFile "07.txt"
+    programsList <- map parseLine . lines <$> readFile "07.txt"
     let programsMap  = fromList  programsList
         bottomName   = getBottom programsMap programsList
         balanced     = findBalanced . cumulate $ mapToTree programsMap bottomName
