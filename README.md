@@ -29,9 +29,10 @@ These are the runtimes of only one trial but the variances are fairly small and 
 | 18  |  0.118      |
 | 19  |  0.026      |
 | 20  |  0.168      |
+| 21  |  4.013      |
 
 Problems that should be optimized further: 15
 
-Problems that could use some work: 05, 14
+Problems that could use some work: 05, 14, 21
 
 Problems that are good enough with optimizations: 17, 13
