@@ -1,11 +1,11 @@
 import Data.List (transpose)
 import Data.List.Split (splitOn, chunksOf)
-import Data.Map.Strict (Map, insert, empty, (!))
+import Data.HashMap (Map, insert, empty, (!))
 
 type Rules = Map String String
 squareRoot = floor . sqrt . fromIntegral
 
-validTwos   = [
+validTwos = [
         [0..3],
         [0, 2, 1, 3],
         [1, 0, 3, 2],
@@ -28,50 +28,34 @@ validThrees = [
     ]
 
 valids :: String -> [String]
-valids str = case length str of
-    4 -> map (map (str !!)) validTwos
-    9 -> map (map (str !!)) validThrees
-
-row :: Int -> Int -> String -> [String]
-row multiple size str =
-    map concat . transpose . map (chunksOf multiple) . chunksOf size $ str
-
-derow :: Int -> [String] -> String
-derow multiple sbsq =
-    concat . concat . transpose . map (chunksOf multiple) $ sbsq
+valids str = map (map (str !!)) $ case length str of
+    4 -> validTwos
+    9 -> validThrees
 
 chunk :: String -> [[String]]
 chunk str =
-    let size = squareRoot $ length str
+    let size     = squareRoot $ length str
         multiple = if even size then 2 else 3
-        rows = chunksOf (size * multiple) str
-    in  map (row multiple size) rows
+        makeRow  = map concat . transpose . map (chunksOf multiple) . chunksOf size
+    in  map makeRow $ chunksOf (size * multiple) str
 
 dechunk :: [[String]] -> String
 dechunk rows =
-    let multiple = squareRoot . length . head . head $ rows
-    in  concat $ map (derow multiple) rows
+    let multiple  = squareRoot . length . head . head $ rows
+        unmakeRow = concat . concat . transpose . map (chunksOf multiple)
+    in  concat $ map unmakeRow rows
 
 enhance :: Rules -> String -> String
-enhance rules grid =
-    dechunk . map (map (rules !)) . chunk $ grid
-
-addRules :: [String] -> String -> Rules -> Rules
-addRules keys value rules = foldr (\key currRules -> insert key value currRules) rules keys
-
-countOn :: String -> Int
-countOn grids = length . filter (== '#') $ grids
+enhance rules = dechunk . map (map (rules !)) . chunk
 
 parseLine :: String -> Rules -> Rules
-parseLine line rules =
-    let inputStr : outputStr : [] = splitOn " => " line
-        input  = splitOn "/" inputStr
-        output = splitOn "/" outputStr
-    in  addRules (valids $ concat input) (concat output) rules
+parseLine line =
+    let input : output : [] = splitOn " => " $ filter (/= '/') line
+    in  flip (foldr (\key currRules -> insert key output currRules)) $ valids input
 
 main :: IO ()
 main = do
     rules <- foldr parseLine empty . lines <$> readFile "21.txt"
-    let iterations = map countOn $ iterate (enhance rules) ".#...####"
+    let iterations = map (length . filter (=='#')) $ iterate (enhance rules) ".#...####"
     print $ iterations !! 5
     print $ iterations !! 18
