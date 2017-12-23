@@ -4,7 +4,6 @@ import Data.Char (ord)
 import Data.Sequence (Seq, fromList, index)
 import Data.Vector.Unboxed (Vector, (!), (//))
 import qualified Data.Vector.Unboxed as V (replicate)
-import Debug.Trace
 
 type Registers = Vector Int
 type Instruction = State -> State
@@ -29,10 +28,10 @@ getValue r v = case v of
     c -> r ! (getIndex c)
 
 app :: Function -> Value -> Value -> Instruction
-app (Function op fn) index value state@(State reg pos cnt) =
-    let i = getIndex index
+app (Function op fn) x y (State reg pos cnt) =
+    let i = getIndex x
     in  State {
-        registers = reg // [(i, reg ! i `fn` getValue reg value)],
+        registers = reg // [(i, reg ! i `fn` getValue reg y)],
         position  = pos + 1,
         countMul  = cnt + fromEnum (op == Mul)
     }
@@ -56,7 +55,7 @@ parseLine str =
             Nothing -> Register $ head s
 
 runInstructions :: Seq Instruction -> State -> Int
-runInstructions instructions state@(State reg pos cnt) =
+runInstructions instructions state@(State _ pos cnt) =
     if pos >= length instructions then cnt else
     let !nextState = instructions `index` pos $ state in runInstructions instructions nextState
 
@@ -64,4 +63,3 @@ main :: IO ()
 main = do
     instructions <- fromList . map parseLine . lines <$> readFile "23.txt"
     print $ runInstructions instructions (State (V.replicate 8 0) 0 0)
-    print $ runInstructions instructions (State (V.replicate 8 0 // [(0, 1)]) 0 0)
