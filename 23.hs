@@ -61,8 +61,7 @@ runInstructions instructions state@(State _ pos cnt) =
 
 count :: Int
 count =
-    foldr (\b h -> h + (fromEnum . any id . map ((== 0) . (b `mod`)) $ [2..squareroot b])) 0 [108100, 108117..125083]
-    where squareroot = floor . sqrt . fromIntegral
+    foldr (\b h -> h + (fromEnum . or . map (\d -> b `mod` d == 0) $ [2..(floor . sqrt . fromIntegral) b])) 0 [108100, 108117..125100]
 
 main :: IO ()
 main = do

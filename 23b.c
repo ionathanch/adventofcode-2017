@@ -13,14 +13,14 @@ unsigned int naiveCount() {
                 }
             }
         }
-        h += !f
+        h += !f;
     }
     return h;
 }
 
 unsigned int count() {
     unsigned short h = 0;
-    for (long b = 108100; b < 125100; b += 17) {
+    for (long b = 108100; b <= 125100; b += 17) {
         bool f = true;
         for (unsigned short d = 2; f && d * d <= b; d++) {
             if (b % d == 0) {
