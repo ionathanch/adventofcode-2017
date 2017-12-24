@@ -10,8 +10,8 @@ next f (steps, i, jumps) =
     in  (steps + 1, i + value, insert i (f value) jumps)
 
 getExitSteps :: Int -> Update -> State -> Int
-getExitSteps len f (!steps, i, jumps) =
-    if i >= len then steps else getExitSteps len f $ next f (steps, i, jumps)
+getExitSteps len f state@(!steps, i, _) =
+    if i >= len then steps else let !nextState = next f state in getExitSteps len f nextState
 
 main :: IO ()
 main = do
