@@ -22,7 +22,7 @@ These are the runtimes of only one trial but the variances are fairly small and 
 | 11  |  0.119      |
 | 12  |  0.168      |
 | 13  |  2.136      |  0.503
-| 14  |  8.211      |  5.206
+| 14  |  4.360      |  3.495
 | 15  | 62.242      |
 | 16  |  0.462      |
 | 17  |  6.753      |  1.865
