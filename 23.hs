@@ -59,7 +59,13 @@ runInstructions instructions state@(State _ pos cnt) =
     if pos >= length instructions then cnt else
     let !nextState = instructions `index` pos $ state in runInstructions instructions nextState
 
+count :: Int
+count =
+    foldr (\b h -> h + (fromEnum . any id . map ((== 0) . (b `mod`)) $ [2..squareroot b])) 0 [108100, 108117..125083]
+    where squareroot = floor . sqrt . fromIntegral
+
 main :: IO ()
 main = do
     instructions <- fromList . map parseLine . lines <$> readFile "23.txt"
     print $ runInstructions instructions (State (V.replicate 8 0) 0 0)
+    print $ count
