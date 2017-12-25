@@ -31,7 +31,8 @@ These are the runtimes of only one trial but the variances are fairly small and 
 | 20  |  0.168      |
 | 21  |  4.013      |
 | 22  | 12.867      |  7.880
-| 23  |  0.274      | 
+| 23  |  0.274      |
+| 24  |  6.887      |
 
 Problems that could use some work: 05, 22, 14, 15, 21, 17
 
