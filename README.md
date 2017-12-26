@@ -1,8 +1,10 @@
 # Advent of Code 2017
-Hopefully most of these solutions are fairly self-explanatory. I'll write longer-length explanations for harder questions.
+Hopefully most of these solutions are fairly self-explanatory. I'll write longer-length explanations for more complex questions.
 
 ## Posts
 [Day 3: Spiral Memory](https://medium.com/@nonphatic/advent-of-code-day-3-30db5599e914) ([problem description](http://adventofcode.com/2017/day/3))
+
+[Day 23: Coprocessor Conflagration](https://medium.com/@nonphatic/advent-of-code-2017-day-23-a29ee2d4bab8) ([problem description](http://adventofcode.com/2017/day/23))
 
 ## Runtimes
 These are the runtimes of only one trial but the variances are fairly small and the focus is on the differences in runtime among the different solutions to see which have comparatively worse performance.
