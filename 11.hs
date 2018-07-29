@@ -2,9 +2,10 @@ import Data.List.Split (splitOn)
 import Data.Foldable (fold)
 
 data Coordinates = Coordinates Int Int Int deriving Show
+instance Semigroup Coordinates where
+    Coordinates x y z <> Coordinates x' y' z' = Coordinates (x + x') (y + y') (z + z')
 instance Monoid Coordinates where
     mempty = Coordinates 0 0 0
-    Coordinates x y z `mappend` Coordinates x' y' z' = Coordinates (x + x') (y + y') (z + z')
 
 getCoordinates :: String -> Coordinates
 getCoordinates direction = case direction of

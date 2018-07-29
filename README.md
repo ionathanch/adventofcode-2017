@@ -40,3 +40,14 @@ These are the runtimes of only one trial but the variances are fairly small and 
 Problems that could use some work: 05, 22, 24, 25, 14, 15, 21, 17
 
 Problems that are good enough with optimizations: 13
+
+## Dependencies
+
+I haven't gotten Stack set up with this project (I'll do it next year!), so here's a list of the extra dependencies needed by various files.
+
+* hashmap
+* matrix
+* split
+* tuple
+* unordered-containers
+* vector
